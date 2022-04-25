@@ -1,0 +1,41 @@
+-> az az group create 	--location uaenorth --name prasad-CLIRG
+ 
+-> az network vnet create --name vnet1 --resource-group prasad-CLIRG --address-prefixes 10.10.0.0/16 --location uaenorth --subnet-name subnet1 --subnet-prefixes 10.10.1.0/24
+
+-> az network vnet subnet create --address-prefixes 10.10.2.0/24 --name subnet2 --resource-group prasad-CLIRG --vnet-name vnet1
+
+-> az network nsg create --name nsg-1 --resource-group prasad-CLIRG --location uaenorth
+
+-> az network nsg create --name nsg-2 --resource-group prasad-CLIRG --location uaenorth
+
+-> az network nsg rule create --name allow-INB --nsg-name nsg-1 --priority 100 --resource-group prasad-CLIRG --access Allow --destination-address-prefixes '*' --direction Inbound --protocol '*' --source-address-prefixes '*' --source-port-ranges '*' --destination-port-ranges '*'
+		
+-> az network nsg rule create --name allow-OTB --nsg-name nsg-1 --priority 110 --resource-group prasad-CLIRG --access Allow --destination-address-prefixes '*' --direction Outbound --protocol '*' --source-address-prefixes '*' --source-port-ranges '*' --destination-port-ranges '*'
+
+-> az network nsg rule create --name allow-INB --nsg-name nsg-2 --priority 100 --resource-group prasad-CLIRG --access Allow --destination-address-prefixes '*' --direction Inbound --protocol '*' --source-address-prefixes '*' --source-port-ranges '*' --destination-port-ranges '*'
+
+-> az network nsg rule create --name allow-OTB --nsg-name nsg-2 --priority 110 --resource-group prasad-CLIRG --access Allow --destination-address-prefixes '*' --direction Outbound --protocol '*' --source-address-prefixes '*' --source-port-ranges '*' --destination-port-ranges '*'
+
+-> az network vnet subnet update -g prasad-CLIRG -n subnet1 --vnet-name vnet1 --network-security-group nsg-1
+	
+-> az network vnet subnet update -g prasad-CLIRG -n subnet2 --vnet-name vnet1 --network-security-group nsg-2
+
+-> az vm create --name vm1 --resource-group prasad-CLIRG --admin-password Azure@testvm --admin-username prasad --image Win2016Datacenter --location uaenorth --nsg nsg-1 --public-ip-address-allocation dynamic --public-ip-sku Basic --size Standard_DS1_v2 --subnet subnet1 --vnet-name vnet1
+
+-> az vm create --name vm2 --resource-group prasad-CLIRG --admin-password Azure@testvm --admin-username prasad --image Win2016Datacenter --location uaenorth --nsg nsg-2 --public-ip-address-allocation dynamic --public-ip-sku Basic --size Standard_DS1_v2 --subnet subnet2 --vnet-name vnet1
+
+-> az network vnet create --name vnet2 --resource-group prasad-CLIRG --address-prefixes 10.20.0.0/16 --location australiacentral --subnet-name subnet1 --subnet-prefixes 10.20.1.0/24
+
+-> az network nsg create --name nsg-3 --resource-group prasad-CLIRG --location australiacentral
+
+-> az network nsg rule create --name allow-INB --nsg-name nsg-3 --priority 100 --resource-group prasad-CLIRG --access Allow --destination-address-prefixes '*' --direction Inbound --protocol '*' --source-address-prefixes '*' --source-port-ranges '*' --destination-port-ranges '*'
+		
+-> az network nsg rule create --name allow-OTB --nsg-name nsg-3 --priority 110 --resource-group prasad-CLIRG --access Allow --destination-address-prefixes '*' --direction Outbound --protocol '*' --source-address-prefixes '*' --source-port-ranges '*' --destination-port-ranges '*'
+
+-> az network vnet subnet update -g prasad-CLIRG -n subnet1 --vnet-name vnet2 --network-security-group nsg-3
+
+-> az vm create --name vm3 --resource-group prasad-CLIRG --admin-password Azure@testvm --admin-username prasad --image Win2016Datacenter --location australiacentral --nsg nsg-3 --public-ip-address-allocation dynamic --public-ip-sku Basic --size Standard_DS1_v2 --subnet subnet1 --vnet-name vnet2
+
+-> az network vnet peering create --name uae-aust --remote-vnet vnet2 --resource-group prasad-CLIRG --vnet-name vnet1 --allow-vnet-access
+
+-> az network vnet peering create --name aust-uae --remote-vnet vnet1 --resource-group prasad-CLIRG --vnet-name vnet2 --allow-vnet-access
